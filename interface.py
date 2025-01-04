@@ -4,11 +4,12 @@ from rag import generate_answer  # Import functions from your rag.py
 
 def clear_input():
     return "", ""
+
 # Define custom CSS
 custom_css = """
 .gradio-container {
     background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
-                url('file:///D:/Huawei NTI Ai Training/Projecttt/Background.png');
+                url('file:///D:/Huawei NTI Ai Tr aining/Projecttt/Background.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -87,11 +88,18 @@ with gr.Blocks(css=custom_css) as interface:
         )
         
         with gr.Row(elem_id="buttons-section"):
-            submit_btn = gr.Button("Ask Question", elem_id="submit-btn")
+            submit_btn = gr.Button("Answer", elem_id="submit-btn")
             clear_btn = gr.Button("Clear", elem_id="clear-btn")
         
         # Connect the buttons to your RAG functions
-        submit_btn.click(fn=generate_answer, inputs=query, outputs=answer)
+        def generate_answer_with_error_handling(query):
+            try:
+                return generate_answer(query)
+            except Exception as e:
+                return f"An error occurred: {str(e)}"
+
+        # Update the button click
+        submit_btn.click(fn=generate_answer_with_error_handling, inputs=query, outputs=answer)
         clear_btn.click(fn=lambda: ("", ""), outputs=[query, answer])
 
 # Launch the interface
