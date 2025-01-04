@@ -1,9 +1,14 @@
 import gradio as gr
 import os
-from rag import generate_answer  # Import functions from your rag.py
+from rag import generate_chat_answer, conversation  # Import updated functions
+import logging
 
-def clear_input():
-    return "", ""
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def clear_chat():
+    conversation.clear_history()
+    return "", []
 
 # Define custom CSS
 custom_css = """
@@ -73,6 +78,7 @@ with gr.Blocks(css=custom_css) as interface:
             ### Your AI-powered healthcare knowledge companion
             """)
         
+        chatbot = gr.Chatbot(label="Chat History", elem_id="chatbot", type="messages")
         query = gr.Textbox(
             label="Ask me anything about health and nutrition",
             placeholder="Example: What are the best sources of plant-based protein?",
@@ -80,27 +86,24 @@ with gr.Blocks(css=custom_css) as interface:
             elem_id="query-input"
         )
         
-        answer = gr.Textbox(
-            label="Expert Answer",
-            placeholder="Your answer will appear here...",
-            lines=8,
-            elem_id="answer-output"
-        )
-        
         with gr.Row(elem_id="buttons-section"):
-            submit_btn = gr.Button("Answer", elem_id="submit-btn")
-            clear_btn = gr.Button("Clear", elem_id="clear-btn")
+            submit_btn = gr.Button("Send", elem_id="submit-btn")
+            clear_btn = gr.Button("Clear Chat", elem_id="clear-btn")
         
         # Connect the buttons to your RAG functions
-        def generate_answer_with_error_handling(query):
-            try:
-                return generate_answer(query)
-            except Exception as e:
-                return f"An error occurred: {str(e)}"
+        def respond(query, chat_history):
+            if not query.strip():
+                return "Please enter a valid question.", chat_history
+            
+            answer = generate_chat_answer(query)
+            chat_history.append({"role": "user", "content": query})
+            chat_history.append({"role": "assistant", "content": answer})
+            logger.info(f"Updated Chat History:\n{chat_history}")  # Log the updated chat history
+            return "", chat_history
 
         # Update the button click
-        submit_btn.click(fn=generate_answer_with_error_handling, inputs=query, outputs=answer)
-        clear_btn.click(fn=lambda: ("", ""), outputs=[query, answer])
+        submit_btn.click(fn=respond, inputs=[query, chatbot], outputs=[query, chatbot])
+        clear_btn.click(fn=clear_chat, outputs=[query, chatbot])
 
 # Launch the interface
 if __name__ == "__main__":
