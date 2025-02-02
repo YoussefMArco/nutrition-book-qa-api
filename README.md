@@ -1,4 +1,4 @@
-# Health & Nutrition Assistant 🌿
+# Health & Nutrition Assistant Using RAG 🌿
 
 Your AI-powered healthcare knowledge companion! This chatbot answers questions about health, nutrition, and wellness using a **Retrieval-Augmented Generation (RAG)** approach. It combines the power of **Gemini AI** and **ChromaDB** to provide accurate, context-aware, and user-friendly responses.
 
